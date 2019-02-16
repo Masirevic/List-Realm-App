@@ -11,4 +11,5 @@ target 'List' do
 pod "RealmSwift"
 
 pod 'SwipeCellKit','2.0.0'
+pod 'ChameleonFramework'
 end

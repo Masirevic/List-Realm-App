@@ -8,12 +8,14 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 
 class ToDoListVC: SwipeTableVC {
 
     let realm = try! Realm()
     
+    @IBOutlet weak var searchBar: UISearchBar!
     var todoItems: Results<Item>?
     
     var selectedCategory: Category? {
@@ -26,15 +28,32 @@ class ToDoListVC: SwipeTableVC {
     override func viewDidLoad() {
         super.viewDidLoad()
     
-        
-      // loadItems()
-        
        
-
+     
+        
      
     }
     
-   
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        guard let colourHex = selectedCategory?.colour else {return}
+        guard let navBar = navigationController?.navigationBar else {return}
+        guard let navBarColor = UIColor(hexString: colourHex) else {return}
+        navBar.barTintColor = navBarColor
+        title = selectedCategory?.name
+        navBar.tintColor = UIColor(contrastingBlackOrWhiteColorOn: navBarColor, isFlat:true)
+        searchBar.barTintColor = navBarColor
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : UIColor(contrastingBlackOrWhiteColorOn: navBarColor, isFlat:true)]
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        guard let originalColor = UIColor(hexString: "1D9BF6") else {return}
+        guard let navBar = navigationController?.navigationBar else {return}
+        navBar.barTintColor = originalColor
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : UIColor.flatWhite()]
+        navBar.tintColor = UIColor.flatWhite()
+    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoItems?.count ?? 1
@@ -47,6 +66,11 @@ class ToDoListVC: SwipeTableVC {
         if let item = todoItems?[indexPath.row] {
             
             cell.textLabel?.text = item.title
+            
+            guard let color =  UIColor(hexString: selectedCategory!.colour)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) else {return UITableViewCell()}
+            
+            cell.backgroundColor = color
+            cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: color, isFlat:true)
             cell.accessoryType = item.done ? .checkmark : .none
         } else {
             cell.textLabel?.text = "No items added"
